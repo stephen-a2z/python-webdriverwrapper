@@ -10,7 +10,7 @@ from webdriverwrapper.wrapper import (
     Remote,
     DesiredCapabilities,
     ActionChains,
-    Proxy,
+    Proxy
 )
 
-VERSION = '2.8.0'
+VERSION = '2.9.0'
