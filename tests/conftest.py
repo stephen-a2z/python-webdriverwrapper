@@ -1,19 +1,25 @@
 import os
 import sys
+import platform
 
 TEST_PATH = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(TEST_PATH, '..'))
 
 
 import pytest
-from pyvirtualdisplay import Display
+from pyvirtualdisplay.display import Display
 
 import webdriverwrapper
 from webdriverwrapper.pytest import *
 
 
-@pytest.yield_fixture(scope='session', autouse=True)
+@pytest.fixture(scope='session', autouse=True)
 def display():
+    """Only use pyvirtualdisplay on Linux (requires Xvfb)."""
+    if platform.system() != 'Linux':
+        yield
+        return
+    
     d = Display(visible=0, size=(1280, 700))
     d.start()
     yield

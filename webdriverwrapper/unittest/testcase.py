@@ -5,7 +5,6 @@ logging.basicConfig(level=logging.INFO)
 import unittest
 import sys
 
-import webdriverwrapper.exceptions as exceptions
 from webdriverwrapper.wrapper import Firefox, Chrome, ChromeOptions
 
 __all__ = (
@@ -47,6 +46,10 @@ class WebdriverTestCase(unittest.TestCase):
                 })
                 self.wait_for_element(id_='resultStats')
     """
+
+    # Class-level type annotations for Pylance
+    _number_of_test: int
+    _count_of_tests: int
 
     domain = None
     """

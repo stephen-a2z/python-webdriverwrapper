@@ -1,11 +1,12 @@
 import pytest
 
+from selenium.webdriver.common.by import By
 from webdriverwrapper.exceptions import NoSuchElementException, TimeoutException
 from webdriverwrapper.wrapper import _WebElementWrapper
 
 
 def test_returns_wrapped_element(driver):
-    elm = driver.find_element_by_id('somepage')
+    elm = driver.find_element(By.ID, 'somepage')
     assert isinstance(elm, _WebElementWrapper)
 
 

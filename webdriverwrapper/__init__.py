@@ -7,12 +7,9 @@ from webdriverwrapper.wrapper import (
     Chrome,
     ChromeOptions,
     Ie,
-    Opera,
-    PhantomJS,
     Remote,
     DesiredCapabilities,
     ActionChains,
-    TouchActions,
     Proxy,
 )
 

@@ -45,8 +45,8 @@ def pytest_report_header(config):
     return lines
 
 
-@pytest.mark.tryfirst
-def pytest_runtest_makereport(item, call, __multicall__):
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+def pytest_runtest_makereport(item, call):
     """
     Pytest hook, see :py:func:`_pytest.hookspec.pytest_runtest_makereport`.
 
@@ -59,14 +59,13 @@ def pytest_runtest_makereport(item, call, __multicall__):
             config.webdriverwrapper_screenshot_path = os.path.join('/', 'tmp', 'testresults')
     """
     # Execute all other hooks to obtain the report object.
-    report = __multicall__.execute()
+    outcome = yield
+    report = outcome.get_result()
 
     if report.failed:
         test_func = _get_test_func(item.obj)
         if hasattr(test_func, 'driver'):  # When the problem is in `driver` fixture, it will not be here.
             make_screenshot_of_failed_tests(test_func.driver, item.config, item.nodeid)
-
-    return report
 
 
 @pytest.fixture(scope='function', autouse=True)
@@ -93,7 +92,7 @@ def make_screenshot_of_failed_tests(driver, config, nodeid):
     driver.get_screenshot_as_file(os.path.join(screenshot_path, '{}.png'.format(name)))
 
 
-@pytest.yield_fixture(scope='function')
+@pytest.fixture(scope='function')
 def driver(request, _driver):
     """
     Fixture for testing. This fixture just take your driver by fixture called
@@ -104,7 +103,7 @@ def driver(request, _driver):
 
     .. code-block:: python
 
-        @pytest.yield_fixture(scope='session')
+        @pytest.fixture(scope='session')
         def _driver():
             driver = Chrome()
             yield driver

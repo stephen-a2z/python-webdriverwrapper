@@ -1,6 +1,5 @@
 # pylint: disable=wildcard-import,unused-wildcard-import,function-redefined,too-many-ancestors
 
-import copy
 import functools
 import logging
 import time
@@ -11,7 +10,6 @@ from selenium.webdriver import *
 from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.firefox.webelement import FirefoxWebElement
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
 from .download import DownloadUrl, DownloadFile
@@ -27,12 +25,9 @@ __all__ = (
     'Chrome',
     'ChromeOptions',
     'Ie',
-    'Opera',
-    'PhantomJS',
     'Remote',
     'DesiredCapabilities',
     'ActionChains',
-    'TouchActions',
     'Proxy',
 )
 
@@ -48,9 +43,11 @@ class _ConvertToWebelementWrapper:
 
     @classmethod
     def _convert_result(cls, driver, res):
-        if type(res) is driver._web_element_cls:
+        # Check if result is a WebElement instance (Selenium 4 compatible)
+        if isinstance(res, WebElement) and not isinstance(res, (_WebElementWrapper, _SelectWrapper)):
             res = cls._convert_into_webelementwrapper(res)
         elif isinstance(res, (list, tuple)):
+            res = list(res)  # Convert to list to allow modification
             for index, item in enumerate(res):
                 res[index] = cls._convert_result(driver, item)
         return res
@@ -62,27 +59,13 @@ class _ConvertToWebelementWrapper:
                 from webdriverwrapper.forms import Form
                 wrapped = Form(webelement)
             elif webelement.tag_name == 'select':
-                wrapped = cls._make_instance(_SelectWrapper, webelement)
+                wrapped = _SelectWrapper(webelement)
             else:
-                wrapped = cls._make_instance(_WebElementWrapper, webelement)
+                wrapped = _WebElementWrapper(webelement)
         except selenium_exc.StaleElementReferenceException:
             return webelement
         else:
             return wrapped
-
-    @classmethod
-    def _make_instance(cls, element_class, webelement):
-        """
-        Firefox uses another implementation of element. This method
-        switch base of wrapped element to firefox one.
-        """
-        if isinstance(webelement, FirefoxWebElement):
-            element_class = copy.deepcopy(element_class)
-            element_class.__bases__ = tuple(
-                FirefoxWebElement if base is WebElement else base
-                for base in element_class.__bases__
-            )
-        return element_class(webelement)
 
 
 class _WebdriverBaseWrapper:
@@ -181,8 +164,8 @@ class _WebdriverBaseWrapper:
 
         .. code-block:: python
 
-            elm = driver.find_element_by_id('someid')
-            elm.find_elements_by_class_name('someclasss')
+            elm = driver.find_element(By.ID, 'someid')
+            elm.find_elements(By.CLASS_NAME, 'someclass')
 
             # vs.
 
@@ -201,19 +184,19 @@ class _WebdriverBaseWrapper:
             raise Exception('You can find element only by one param.')
 
         if id_ is not None:
-            return parent.find_elements_by_id(id_)
+            return parent.find_elements(By.ID, id_)
         if class_name is not None:
-            return parent.find_elements_by_class_name(class_name)
+            return parent.find_elements(By.CLASS_NAME, class_name)
         if name is not None:
-            return parent.find_elements_by_name(name)
+            return parent.find_elements(By.NAME, name)
         if tag_name is not None:
-            return parent.find_elements_by_tag_name(tag_name)
+            return parent.find_elements(By.TAG_NAME, tag_name)
         if text is not None:
             xpath = './/*/text()[contains(., "{}") and not(ancestor-or-self::*[@data-selenium-not-search])]/..'.format(text)
         if xpath is not None:
-            return parent.find_elements_by_xpath(xpath)
+            return parent.find_elements(By.XPATH, xpath)
         if css_selector is not None:
-            return parent.find_elements_by_css_selector(css_selector)
+            return parent.find_elements(By.CSS_SELECTOR, css_selector)
         raise Exception('You must specify id or name of element on which you want to click.')
 
     def find_element(self, by=By.ID, value=None):
@@ -497,6 +480,9 @@ class _WebdriverWrapper(WebdriverWrapperErrorMixin, WebdriverWrapperInfoMixin, _
         WebDriver implements switching to other window only by it's name. With
         wrapper there is also option to switch by title of window or URL. URL
         can be also relative path.
+        
+        Note: This method is kept for backwards compatibility. In Selenium 4,
+        use switch_to.window() directly.
         """
         if window_name:
             self.switch_to.window(window_name)
@@ -697,14 +683,6 @@ class Firefox(_WebdriverWrapper, Firefox):
 
 
 class Ie(_WebdriverWrapper, Ie):
-    pass
-
-
-class Opera(_WebdriverWrapper, Opera):
-    pass
-
-
-class PhantomJS(_WebdriverWrapper, PhantomJS):
     pass
 
 

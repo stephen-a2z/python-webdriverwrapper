@@ -8,7 +8,7 @@ except ImportError:
 
 setup(
     name='webdriverwrapper',
-    version='2.8.0',  # Can't use VERSION because of imports during install before installing dependencies.
+    version='2.9.0',  # Can't use VERSION because of imports during install before installing dependencies.
     packages=[
         'webdriverwrapper',
         'webdriverwrapper.pytest',
@@ -17,7 +17,7 @@ setup(
 
     install_requires=[
         'requests',
-        'selenium',
+        'selenium>=4.0.0',
     ],
     extras_require={
         'suggestion': [
@@ -33,7 +33,7 @@ setup(
     url='https://github.com/horejsek/python-webdriverwrapper',
     author='Michal Horejsek',
     author_email='horejsekmichal@gmail.com',
-    description='Better interface for WebDriver (Selenium 2).',
+    description='Better interface for WebDriver (Selenium 4).',
     license='PSF',
 
     classifiers=[
