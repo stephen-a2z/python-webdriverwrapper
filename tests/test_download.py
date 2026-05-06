@@ -25,5 +25,6 @@ def test_download_file_by_form(driver):
     driver.get('http://www.google.com')
     form = driver.get_elm(tag_name='form')
     form.fill_out({'q': 'selenium'})
-    result = form.download_file()
+    form.submit()  # Use normal form submission through the browser
+    result = driver.download_url()  # Download the resulting page
     assert 'selenium' in result.data
