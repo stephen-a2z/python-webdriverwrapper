@@ -2,9 +2,9 @@
 
 ## Install
 
-`pip install webdriverwrapper`
+`pip install git+https://github.com/stephen-a2z/python-webdriverwrapper.git`
 
-Support for Python 3.4 and higher.
+Support for Python 3.4 and higher and selenium 4.x.
 
 ## How to install chromedriver
 
